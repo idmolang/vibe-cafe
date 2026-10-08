@@ -143,6 +143,60 @@ fieldset label {
   cursor: pointer;
 }
 
+/* ===== 스탬프 카드 ===== */
+.stamp-card {
+  margin: 0 0 18px;
+  padding: 14px;
+  border: 2px dashed #d9c9b8;
+  border-radius: 12px;
+  background-color: #faf6f0;
+}
+
+.stamp-title {
+  margin-bottom: 10px;
+  color: #6b4226;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.stamp-grid:empty {
+  display: none;
+}
+
+.stamp-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: 2px solid #d9c9b8;
+  border-radius: 50%;
+  color: #b9a08a;
+  font-size: 14px;
+}
+
+.stamp-slot.filled {
+  border-color: #6b4226;
+  background-color: #f3e9de;
+  font-size: 20px;
+}
+
+.redeem-label {
+  display: block;
+  margin-top: 12px;
+  color: #2e7d32;
+  cursor: pointer;
+}
+
+.redeem-label input {
+  accent-color: #6b4226;
+}
+
 /* ===== 예상 금액 ===== */
 .total-price {
   margin: 8px 0 18px;

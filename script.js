@@ -22,6 +22,81 @@ const orderResult = document.getElementById('order-result');
 const optionCheckboxes = document.querySelectorAll('input[name="option"]');
 
 
+// ===== 1-1. 스탬프 =====
+// 전화번호별로 스탬프 개수를 Supabase 'cafe_stamps03' 테이블에 저장합니다.
+// 음료 1잔 = 스탬프 1개, 10개가 모이면 음료 1잔 무료. (테이블 생성은 stamps.sql 참고)
+const STAMP_GOAL = 10;
+
+const phoneInput = document.getElementById('phone');
+const stampTitle = document.getElementById('stamp-title');
+const stampGrid = document.getElementById('stamp-grid');
+const redeemLabel = document.getElementById('redeem-label');
+const redeemCheckbox = document.getElementById('redeem-free');
+
+let stampCount = 0; // 현재 입력된 전화번호의 스탬프 수
+
+// 숫자만 남겨서 "010-1234-5678"과 "01012345678"을 같은 사람으로 취급합니다.
+function normalizePhone(value) {
+  return value.replace(/\D/g, '');
+}
+
+// 무료 쿠폰을 사용하는 주문인지
+function isRedeeming() {
+  return redeemCheckbox.checked && stampCount >= STAMP_GOAL;
+}
+
+// 스탬프 카드(제목, 10칸, 쿠폰 체크박스)를 다시 그립니다.
+function renderStampCard() {
+  const phone = normalizePhone(phoneInput.value);
+  stampGrid.textContent = '';
+
+  if (phone === '') {
+    stampTitle.textContent = '전화번호를 입력하면 스탬프가 적립돼요 (10개 모으면 1잔 무료!)';
+  } else {
+    const filled = Math.min(stampCount, STAMP_GOAL);
+    stampTitle.textContent = '스탬프 ' + stampCount + '개 · ' +
+      (stampCount >= STAMP_GOAL
+        ? '무료 음료 쿠폰 사용 가능!'
+        : (STAMP_GOAL - stampCount) + '개 더 모으면 1잔 무료');
+    for (let i = 0; i < STAMP_GOAL; i++) {
+      const slot = document.createElement('span');
+      slot.className = 'stamp-slot' + (i < filled ? ' filled' : '');
+      slot.textContent = i < filled ? '☕' : i + 1;
+      stampGrid.appendChild(slot);
+    }
+  }
+
+  const canRedeem = phone !== '' && stampCount >= STAMP_GOAL;
+  redeemLabel.classList.toggle('hidden', !canRedeem);
+  if (!canRedeem) redeemCheckbox.checked = false;
+  updateTotalDisplay();
+}
+
+// 입력된 전화번호의 스탬프 수를 DB에서 가져옵니다.
+async function loadStamps() {
+  const phone = normalizePhone(phoneInput.value);
+  stampCount = 0;
+  if (phone !== '') {
+    const { data, error } = await supabaseClient
+      .from('cafe_stamps03')
+      .select('stamps')
+      .eq('phone', phone)
+      .maybeSingle();
+    if (error) {
+      console.error('스탬프 조회 실패:', error);
+    } else if (data) {
+      stampCount = data.stamps;
+    }
+    // 조회 중에 번호가 바뀌었다면 오래된 결과는 버립니다.
+    if (phone !== normalizePhone(phoneInput.value)) return;
+  }
+  renderStampCard();
+}
+
+phoneInput.addEventListener('change', loadStamps);
+redeemCheckbox.addEventListener('change', updateTotalDisplay);
+
+
 // ===== 2. 금액 계산 함수 =====
 // 현재 선택된 값들을 읽어서 "총 금액(숫자)"을 돌려주는 함수입니다.
 // 화면 표시와 주문 확인 메시지에서 모두 이 함수를 재사용합니다.
@@ -58,7 +133,14 @@ function calculateTotal() {
   if (quantity > 10) quantity = 10;
 
   // (5) 한 잔 가격(음료 + 사이즈 + 옵션)에 수량을 곱합니다.
-  return (drinkPrice + sizePrice + optionsPrice) * quantity;
+  const unitPrice = drinkPrice + sizePrice + optionsPrice;
+  let total = unitPrice * quantity;
+
+  // (6) 스탬프 무료 쿠폰을 쓰면 한 잔 값을 뺍니다.
+  if (isRedeeming()) {
+    total -= unitPrice;
+  }
+  return total;
 }
 
 
@@ -174,16 +256,38 @@ form.addEventListener('submit', async function (event) {
     orderBtn.disabled = false;
   }
 
+  // --- 스탬프 적립 ---
+  // 무료로 받은 음료 1잔은 적립 대상이 아니고, 쿠폰을 썼다면 10개를 차감합니다.
+  const phone = normalizePhone(phoneInput.value);
+  let stampMessage = '';
+  if (phone !== '') {
+    const redeemed = isRedeeming();
+    const earned = quantity - (redeemed ? 1 : 0);
+    const newCount = stampCount - (redeemed ? STAMP_GOAL : 0) + earned;
+    const { error: stampError } = await supabaseClient
+      .from('cafe_stamps03')
+      .upsert({ phone: phone, stamps: newCount });
+    if (stampError) {
+      console.error('스탬프 저장 실패:', stampError);
+      stampMessage = ' (스탬프 적립에 실패했어요)';
+    } else {
+      stampCount = newCount;
+      stampMessage = ' 🎟️ 스탬프 +' + earned + ' (현재 ' + newCount + '개)' +
+        (redeemed ? ' · 무료 쿠폰 사용!' : '');
+    }
+  }
+
   // --- 저장 성공: 여기부터는 기존 동작 ---
 
   // 주문 확인 메시지 만들기
   const message =
     customerName + '님, ' + drinkName + ' ' + size + '사이즈' + optionText +
-    ' ' + quantity + '잔, 총 ' + total.toLocaleString() + '원 주문이 접수되었습니다!';
+    ' ' + quantity + '잔, 총 ' + total.toLocaleString() + '원 주문이 접수되었습니다!' + stampMessage;
 
   // textContent로 넣으면 이름에 특수문자(<, > 등)가 있어도 안전하게 글자로만 표시됩니다.
   orderResult.textContent = message;
   orderResult.hidden = false; // 숨겨둔 영역을 화면에 보이게 합니다.
+  renderStampCard(); // 갱신된 스탬프 카드 표시
 
   // 주문 내역에 저장합니다. (객체 하나 = 주문 1건)
   orders.push({
@@ -212,7 +316,7 @@ form.addEventListener('submit', async function (event) {
 form.addEventListener('reset', function () {
   orderResult.hidden = true; // 주문 확인 메시지 숨기기
   orderResult.textContent = '';
-  setTimeout(updateTotalDisplay, 0); // 초기화가 끝난 뒤 금액을 0원으로 갱신
+  setTimeout(loadStamps, 0); // 초기화가 끝난 뒤 스탬프 카드와 금액을 갱신
 });
 
 
@@ -323,5 +427,5 @@ tabButtons.forEach(function (button) {
 
 // ===== 10. 페이지를 처음 열었을 때 =====
 // 새로고침 후 브라우저가 이전 선택값을 기억해둘 수 있으므로 금액을 한 번 맞춰줍니다.
-updateTotalDisplay();
+loadStamps(); // 스탬프 카드 + 금액 표시 (새로고침 후 남은 전화번호도 반영)
 renderOrders(); // 빈 상태 안내 문구와 배지(0)를 표시
