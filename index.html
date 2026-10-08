@@ -54,11 +54,59 @@
         <label for="drink">음료 선택</label>
         <select id="drink" name="drink">
           <option value="" data-price="0">-- 음료를 선택하세요 --</option>
-          <option value="americano" data-price="3500">아메리카노 3,500원</option>
-          <option value="latte" data-price="4000">카페라떼 4,000원</option>
-          <option value="mocha" data-price="4500">카페모카 4,500원</option>
-          <option value="vanilla-latte" data-price="4500">바닐라라떼 4,500원</option>
-          <option value="greentea-latte" data-price="4500">녹차라떼 4,500원</option>
+          <optgroup label="☕ 커피">
+            <option value="espresso" data-price="2500">에스프레소 2,500원</option>
+            <option value="americano" data-price="3500">아메리카노 3,500원</option>
+            <option value="honey-americano" data-price="4000">꿀아메리카노 4,000원</option>
+            <option value="coldbrew" data-price="4000">콜드브루 4,000원</option>
+            <option value="coldbrew-latte" data-price="4500">콜드브루라떼 4,500원</option>
+            <option value="latte" data-price="4000">카페라떼 4,000원</option>
+            <option value="cappuccino" data-price="4000">카푸치노 4,000원</option>
+            <option value="mocha" data-price="4500">카페모카 4,500원</option>
+            <option value="vanilla-latte" data-price="4500">바닐라라떼 4,500원</option>
+            <option value="hazelnut-latte" data-price="4500">헤이즐넛라떼 4,500원</option>
+            <option value="condensed-latte" data-price="4500">연유라떼 4,500원</option>
+            <option value="caramel-macchiato" data-price="4800">카라멜마키아토 4,800원</option>
+            <option value="original-coffee" data-price="3000">원조커피 3,000원</option>
+          </optgroup>
+          <optgroup label="🥛 라떼 (논커피)">
+            <option value="greentea-latte" data-price="4500">녹차라떼 4,500원</option>
+            <option value="choco-latte" data-price="4500">초코라떼 4,500원</option>
+            <option value="grain-latte" data-price="4500">곡물라떼 4,500원</option>
+            <option value="sweetpotato-latte" data-price="4800">고구마라떼 4,800원</option>
+            <option value="strawberry-latte" data-price="4800">딸기라떼 4,800원</option>
+            <option value="toffeenut-latte" data-price="4800">토피넛라떼 4,800원</option>
+            <option value="milktea" data-price="4200">밀크티 4,200원</option>
+          </optgroup>
+          <optgroup label="🥤 스무디 · 프라페">
+            <option value="cookie-frappe" data-price="4800">쿠키프라페 4,800원</option>
+            <option value="mintchoco-frappe" data-price="4800">민트초코프라페 4,800원</option>
+            <option value="coffee-frappe" data-price="4500">커피프라페 4,500원</option>
+            <option value="yogurt-smoothie" data-price="4500">플레인요거트스무디 4,500원</option>
+            <option value="mango-smoothie" data-price="4800">망고스무디 4,800원</option>
+            <option value="blueberry-smoothie" data-price="4800">블루베리요거트스무디 4,800원</option>
+            <option value="strawberry-smoothie" data-price="4800">딸기스무디 4,800원</option>
+            <option value="choco-smoothie" data-price="4500">초코스무디 4,500원</option>
+          </optgroup>
+          <optgroup label="🍋 에이드 · 주스">
+            <option value="lemonade" data-price="4000">레몬에이드 4,000원</option>
+            <option value="grapefruit-ade" data-price="4300">자몽에이드 4,300원</option>
+            <option value="greengrape-ade" data-price="4300">청포도에이드 4,300원</option>
+            <option value="yuja-ade" data-price="4300">유자에이드 4,300원</option>
+            <option value="lime-mojito" data-price="4300">라임모히토 4,300원</option>
+            <option value="cherry-coke" data-price="3500">체리콕 3,500원</option>
+            <option value="peach-icetea" data-price="3500">복숭아아이스티 3,500원</option>
+            <option value="orange-juice" data-price="4500">오렌지주스 4,500원</option>
+          </optgroup>
+          <optgroup label="🍵 차">
+            <option value="chamomile" data-price="3000">캐모마일 3,000원</option>
+            <option value="peppermint" data-price="3000">페퍼민트 3,000원</option>
+            <option value="earlgrey" data-price="3000">얼그레이 3,000원</option>
+            <option value="yuja-tea" data-price="3800">유자차 3,800원</option>
+            <option value="lemon-tea" data-price="3800">레몬차 3,800원</option>
+            <option value="grapefruit-tea" data-price="4000">자몽차 4,000원</option>
+            <option value="omija-tea" data-price="4000">오미자차 4,000원</option>
+          </optgroup>
         </select>
       </div>
 
